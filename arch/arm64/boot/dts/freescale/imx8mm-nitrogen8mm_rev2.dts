@@ -348,7 +348,7 @@
 	status = "okay";
 
 	pmic: pf8100@8 {
-		compatible = "nxp,pf8x00";
+		compatible = "nxp,pf8100";
 		reg = <0x08>;
 		status = "okay";
 
