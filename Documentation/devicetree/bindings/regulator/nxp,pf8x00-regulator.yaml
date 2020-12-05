@@ -1,0 +1,220 @@
+# SPDX-License-Identifier: GPL-2.0-only OR BSD-2-Clause
+%YAML 1.2
+---
+$id: http://devicetree.org/schemas/regulator/nxp,pf8x00-regulator.yaml#
+$schema: http://devicetree.org/meta-schemas/core.yaml#
+
+title: NXP PF8x00 Power Management Integrated Circuit regulators
+
+maintainers:
+  - Adrien Grassein <adrien.grassein@gmail.com>
+
+description:
+  pf8x00 are a 12-chanel regulator PMIC family. Regulators nodes should
+  be named to ldo<>, sw<> and vnss. The definition for each of these nodes
+  is defined using the standard binding for regulators at
+  Documentation/devicetree/bindings/regulator/regulator.txt.
+  Datasheet is available at https://www.nxp.com/docs/en/data-sheet/PF8100_PF8200.pdf
+
+properties:
+  compatible:
+    enum:
+      - nxp,pf8100
+      - nxp,pf8121a
+      - nxp,pf8200
+
+  reg:
+    maxItems: 1
+
+  regulators:
+    type: object
+    description:
+      list of regulators provided by this controller
+
+    patternProperties:
+      "^ldo[1-4]$":
+        type: object
+        $ref: regulator.yaml#
+        description:
+          Properties for single LDO regulator.
+
+        properties:
+          nxp,hw-en:
+            $ref: /schemas/types.yaml#definitions/flag
+            description:
+              Only available for ldo2. If present, use LDO2EN input pin
+              to enable or disable ldo2. (LDO2EN should be in HIGH state
+              to enable LDO2 if nxp,hw-en is specified).
+
+          nxp,vselect-en:
+            $ref: /schemas/types.yaml#definitions/flag
+            description:
+              Only available for ldo2. When specified, use the VSELECT
+              input pin of the chip to control the output voltage of the
+              ldo02 regulator. (3.3V if VSELECT is LOW, 1.8V if HIGH).
+
+        unevaluatedProperties: false
+
+      "^sw[1-7]$":
+        type: object
+        $ref: regulator.yaml#
+        description:
+          Properties for single SW regulator.
+
+        properties:
+          nxp,phase:
+            $ref: /schemas/types.yaml#definitions/uint32
+            minimum: 0
+            maximum: 315
+            enum: [ 0, 45, 90, 135, 180, 225, 270, 315 ]
+            description:
+               This controls the phase shift of the switching frequency.
+               Default value is the one written in the OTP configuration.
+
+          nxp,fast-slew:
+            $ref: /schemas/types.yaml#definitions/flag
+            description:
+              Enables the fast DVS ramp of the regulator.
+              Default is slow DVS ramp.
+              Not available for sw7 regulator.
+              Default value is the one written in the OTP configuration.
+
+          nxp,dual-phase:
+            $ref: /schemas/types.yaml#definitions/flag
+            description:
+              This allow regulators  sw1 and sw2, sw3 and sw4, sw5 and sw6,
+              to work together to deliver a maximum 5A current.
+              Should be only specified for sw1, sw3 and sw5.
+              If set, sw2, sw4 and sw6 configuration will be totally ignored.
+              This is not a configuration property. It's only used to control
+              the consistency of the OTP confguration.
+
+          nxp,quad-phase:
+            $ref: /schemas/types.yaml#definitions/flag
+            description:
+              This allow regulators  sw1, sw2, sw3 and sw4 to work together
+              to deliver a maximum 10A current. Should be only specified for
+              sw1. If set, sw2, sw3 and sw4 configuration will be totally ignored.
+              This is not a configuration property. It's only used to control
+              the consistency of the OTP confguration.
+
+        unevaluatedProperties: false
+
+    properties:
+      vsnvs:
+        type: object
+        $ref: regulator.yaml#
+        description:
+          Properties for vsnvs regulator.
+
+        unevaluatedProperties: false
+
+    additionalProperties: false
+
+required:
+  - compatible
+  - reg
+  - regulators
+
+additionalProperties: false
+
+examples:
+  - |
+    i2c {
+      #address-cells = <1>;
+      #size-cells = <0>;
+      pmic@8 {
+        compatible = "nxp,pf8100";
+        reg = <0x08>;
+
+        regulators {
+            reg_ldo1: ldo1 {
+              regulator-always-on;
+              regulator-boot-on;
+              regulator-max-microvolt = <5000000>;
+              regulator-min-microvolt = <1500000>;
+            };
+
+            reg_ldo2: ldo2 {
+              regulator-always-on;
+              regulator-boot-on;
+              regulator-max-microvolt = <5000000>;
+              regulator-min-microvolt = <1500000>;
+            };
+
+            reg_ldo3: ldo3 {
+              regulator-always-on;
+              regulator-boot-on;
+              regulator-max-microvolt = <5000000>;
+              regulator-min-microvolt = <1500000>;
+            };
+
+            reg_ldo4: ldo4 {
+              regulator-always-on;
+              regulator-boot-on;
+              regulator-max-microvolt = <5000000>;
+              regulator-min-microvolt = <1500000>;
+            };
+
+            reg_sw1: sw1 {
+              nxp,phase = <0>;
+              regulator-always-on;
+              regulator-boot-on;
+              regulator-max-microvolt = <1800000>;
+              regulator-min-microvolt = <400000>;
+              regulator-max-microamp  = <4500000>
+            };
+
+            reg_sw2: sw2 {
+              regulator-always-on;
+              regulator-boot-on;
+              regulator-max-microvolt = <1800000>;
+              regulator-min-microvolt =  <400000>;
+            };
+
+            reg_sw3: sw3 {
+              regulator-always-on;
+              regulator-boot-on;
+              regulator-max-microvolt = <1800000>;
+              regulator-min-microvolt =  <400000>;
+              nxp,fast-slew;
+            };
+
+            reg_sw4: sw4 {
+              regulator-always-on;
+              regulator-boot-on;
+              regulator-max-microvolt = <1800000>;
+              regulator-min-microvolt =  <400000>;
+              nxp,fast-slew;
+            };
+
+            reg_sw5: sw5 {
+              regulator-always-on;
+              regulator-boot-on;
+              regulator-max-microvolt = <1800000>;
+              regulator-min-microvolt =  <400000>;
+            };
+
+           reg_sw6: sw6 {
+             regulator-always-on;
+             regulator-boot-on;
+             regulator-max-microvolt = <1800000>;
+             regulator-min-microvolt =  <400000>;
+           };
+
+           reg_sw7: sw7 {
+             regulator-always-on;
+             regulator-boot-on;
+             regulator-max-microvolt = <4100000>;
+             regulator-min-microvolt = <1000000>;
+           };
+
+          reg_vsnvs: vsnvs {
+            regulator-always-on;
+            regulator-boot-on;
+            regulator-max-microvolt = <3300000>;
+            regulator-min-microvolt = <1800000>;
+          };
+        };
+      };
+    };
